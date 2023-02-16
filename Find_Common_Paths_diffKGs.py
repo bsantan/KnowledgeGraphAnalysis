@@ -176,8 +176,8 @@ def main():
 
 
     if full_or_skim == 'skim':
-        patterns_all_df.to_csv(directory+'/PathLabel_Counts_Skim.csv',sep=',',index=False)  #Patterns_ #PathLabel_ if outputting the actual paths, not the patterns
-        patterns_all_unique.to_csv(directory+'/PathLabel_Counts_Skim_Unique.csv',sep=',',index=False) #Patterns_ #PathLabel_ if outputting the actual paths, not the patterns
+        patterns_all_df.to_csv(directory+'/Patterns_Counts_Skim.csv',sep=',',index=False)  #Patterns_ #PathLabel_ if outputting the actual paths, not the patterns
+        patterns_all_unique.to_csv(directory+'/Patterns_Counts_Skim_Unique.csv',sep=',',index=False) #Patterns_ #PathLabel_ if outputting the actual paths, not the patterns
     elif full_or_skim == 'full':
         patterns_all_df.to_csv(directory+'/Pattern_Counts_Full.csv',sep=',',index=False)
         patterns_all_unique.to_csv(directory+'/Pattern_Counts_Full_Unique.csv',sep=',',index=False)
