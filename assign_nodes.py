@@ -19,7 +19,6 @@ def unique_nodes(examples):
 	# get unique node values
 	nodes = list(set(pd.melt(examples)["value"].values))
 
-	print(nodes)
 	return(nodes)
 
 # Search through labels to find nodes based on input feature
@@ -30,7 +29,7 @@ def unique_nodes(examples):
 def find_node(node, kg, ontology = ""):
 	nodes = kg.labels_all
 
-	results = nodes[nodes["label"].str.contains(node,flags=re.IGNORECASE, na = False)][["label", "id"]]
+	results = nodes[nodes["label"].str.contains(node,flags=re.IGNORECASE, na = False)][["label", "entity_uri"]]
 
 	return(results)
                 
@@ -63,10 +62,10 @@ def search_nodes(nodes, kg, examples):
 				user_input = input("Input node 'label': ")
 				if node_in_search(found_nodes,user_input):
 					#Manage if there are 2 duplicate label names
-					if len(found_nodes[found_nodes['label'] == user_input][['label','id']]) > 1:
-						user_input = input("Input node 'id': ")
+					if len(found_nodes[found_nodes['label'] == user_input][['label','entity_uri']]) > 1:
+						user_input = input("Input node 'entity_uri': ")
 						if node_id_in_search(found_nodes,user_input):
-							node_label = kg.labels_all.loc[kg.labels_all['id'] == user_input,'label'].values[0]
+							node_label = kg.labels_all.loc[kg.labels_all['entity_uri'] == user_input,'label'].values[0]
 							bad_input = False
 					else:
 						node_label= user_input
@@ -101,6 +100,16 @@ def search_nodes(nodes, kg, examples):
 	print('examples complete: ',examples)
 	return(examples)
 
+#An automatic way of doing search_node without user input, if what is given in file is exact
+def extract_label(nodes, kg, examples):
+	examples["source_label"] = ""
+	examples["target_label"] = ""
+	for node in nodes:
+		node_label = kg.labels_all.loc[kg.labels_all['entity_uri'] == node,'label'].values[0]
+		examples.loc[examples["source"] == node,"source_label"] = node_label
+		examples.loc[examples["target"] == node,"target_label"] = node_label
+
+	return(examples)
 
 # Check if search input is in the list of integer_ids
 def node_in_search(found_nodes, user_input):
@@ -111,7 +120,7 @@ def node_in_search(found_nodes, user_input):
 
 # Check if search input is in the list of integer_ids
 def node_id_in_search(found_nodes, user_input):
-	if user_input in found_nodes[["id"]].values:
+	if user_input in found_nodes[["entity_uri"]].values:
 		return(True)
 	else:
 		return(False)
@@ -149,22 +158,29 @@ def check_input_existence(output_dir,kg_type,experiment_paths):
 
 
 # Wrapper function
-def interactive_search_wrapper(g,user_input_file, output_dir):
-    exists = check_input_existence(output_dir)
-    if(exists[0] == 'false'):
-        print('Interactive Node Search')
-        #Interactively assign node
-        u = read_user_input(user_input_file)
-        n = unique_nodes(u)
-        s = search_nodes(n,g,u)
-        create_input_file(s,output_dir)
-    else:
-        print('Node mapping file exists... moving to embedding creation')
-        mapped_file = output_dir + '/'+ exists[1]
-        s = pd.read_csv(mapped_file, sep = "|")
-    return(s)
+def interactive_search_wrapper(g,user_input_file, output_dir,kg_type,experiment_paths,input_type,input_df):
+	if input_type == 'file':
+		exists = check_input_existence(output_dir,kg_type,experiment_paths)
+		if(exists[0] == 'false'):
+			print('Interactive Node Search')
+			#Interactively assign node
+			u = read_user_input(user_input_file)
+			n = unique_nodes(u)
+			s = search_nodes(n,g,u)
+			create_input_file(s,output_dir,kg_type,experiment_paths)
+		else:
+			print('Node mapping file exists... moving to embedding creation')
+			mapped_file = output_dir + '/'+ exists[1]
+			s = pd.read_csv(mapped_file, sep = "|")
+	else:
+		n = unique_nodes(input_df)
+		s = extract_label(n,g,input_df)
+		#create_input_file(s,output_dir,kg_type,experiment_paths)
+	
+	return(s)
 
-                              
+'''   
+#To REMOVE                    
 # Wrapper function without input file that is user defining the full mechanism
 def interactive_search_wrapper_without_file(g,u, output_dir,kg_type,experiment_paths):
 
@@ -181,3 +197,4 @@ def interactive_search_wrapper_without_file(g,u, output_dir,kg_type,experiment_p
         mapped_file = output_dir + '/'+ exists[1]
         s = pd.read_csv(mapped_file, sep = "|")
     return(s)
+'''

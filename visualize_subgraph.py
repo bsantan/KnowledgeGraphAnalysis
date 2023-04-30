@@ -50,7 +50,11 @@ def create_noa_file(subgraph_attribute_df,output_dir):
 
 def create_sif_file(source_node,target_node,subgraph_df,output_dir):
 
+    source_node = source_node.replace(' ','_').replace(',','').replace('/','')
+    target_node = target_node.replace(' ','_').replace(',','').replace('/','')
+
     sif_file = output_dir+"/"+source_node+"_"+target_node+"_Subgraph.csv"
+
     #Check for existence of output directory
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -81,17 +85,15 @@ def create_cytoscape_png(subgraph_df,subgraph_attributes_df,output_dir):
     p4c.export_image(png_file,network='subgraph')
 
 # Wrapper Function removed input_nodes_df since not creating attribute file
-def output_visualization(source_node,target_node,subgraph_df,output_dir): 
+def output_visualization(input_nodes_df,source_node,target_node,subgraph_df,output_dir): 
 
-    #subgraph_attributes_df = create_node_attributes(input_nodes_df,subgraph_df)
+    subgraph_attributes_df = create_node_attributes(input_nodes_df,subgraph_df)
 
-    #create_noa_file(subgraph_attributes_df,output_dir)
+    create_noa_file(subgraph_attributes_df,output_dir)
 
     create_sif_file(source_node,target_node,subgraph_df,output_dir)
 
     #create_cytoscape_png(subgraph_df,subgraph_attributes_df,output_dir)
-
-    #return subgraph_attributes_df
 
 
 
