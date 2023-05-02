@@ -1,13 +1,14 @@
 # KnowledgeGraphAnalysis
 
-This repository enables the generation of shortest paths from a given knowledge graph, and visualization of those paths using upset plots. The scripts shown here are created for specific use cases of creating paths from MGMLink or KG-microbe-phenio.
+This repository enables the generation of paths from a given knowledge graph, and visualization of those paths using upset plots. The scripts shown here are created for specific use cases of creating paths from MGMLink, KG-microbe-phenio, or uniprot-KG.
 
 ## Running the Script
 
-1. First the paths can be created using the creating_subgraph_from_KG.py script using microbe and disease source and target nodes, respectively, microbe - neurotransmitter - disease source and target nodes, or a template based search.
+1. First the paths can be created using the creating_subgraph_from_KG.py script using one path mode (microbe to disease, for example), two path mode (microbe - neurotransmitter - disease, for example), or a template based search.
 
 ```
 python creating_subgraph_from_KG.py
+python creating_subgraph_from_KG.py --input-dir INPUT-DIR  --output-dir OUTPUT-DIR --knowledge-graphs "['KG1','KG2']" --input-type INPUT-TYPE --experiment-type EXPERIMENT-TYPE
 ```
 
 2. Next, all paths generated can be evaluated for common node patterns using the Find_Common_Paths_diffKGs.py script, which aggregates all paths in the input directory and identifies which ontology/resource the nodes in that path are from. Skim only lists each node type once, and full will list every occurance of the node type. The graph type specifies which format the node identifiers are in to align them to their correpsonding ontology or database.

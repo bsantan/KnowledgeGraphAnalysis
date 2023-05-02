@@ -24,9 +24,7 @@ def defineArguments():
 
 def get_data(directory,kg_type):
 
-    df = pd.read_csv(directory+'/Pattern_Counts_Skim.csv')
-
-    print(directory)
+    df = pd.read_csv(directory+'/Patterns_Counts_Skim.csv')
 
     #Get all unique node types
     patterns = []
@@ -63,7 +61,7 @@ def get_data(directory,kg_type):
 
 def path_len_dist(directory,kg_type):
 
-    df = pd.read_csv(directory+'/Pattern_Counts_Skim.csv')
+    df = pd.read_csv(directory+'/Patterns_Counts_Skim.csv')
 
     #path_lengths = defaultdict(list)
     path_length_df = pd.DataFrame()
@@ -99,6 +97,9 @@ def main():
     kg_df = get_data(kg_directory,'kg')
 
     full_df = pd.merge(pkl_df,kg_df,how='outer')
+    #Use if making upset plot for only 1 kg
+    #full_df = kg_df
+ 
     full_df = full_df.replace(np.nan, int(0))
     cols = list(full_df.columns)
     cols.remove('kg_type')
@@ -108,17 +109,21 @@ def main():
     full_df = full_df.set_index((full_df[cols[0]] == 1))
     for i in range(1,len(cols)):
         full_df = full_df.set_index((full_df[cols[i]] == 1),append=True)
+    
 
-
-    #Create upset plot
+    print(full_df)
+    #Create upset plot 
+    upset = UpSet(full_df,intersection_plot_elements=0)
     upset = UpSet(full_df,intersection_plot_elements=0)  # disable the default bar chart
     upset.add_stacked_bars(by="kg_type", colors=cm.Dark2,
                         title="Path Count per KG", elements=20)
     
     upset.plot()
-    plt.suptitle("Microbe-Neurotransmitter-Disease Path Patterns Found in Each KG") #Microbe-Neurotransmitter-Disease for two paths as input to command line, Microbe-Disease for one paths
-    plt.legend(["MGMLink","kg-microbe-phenio"])
-    save_dir = pkl_directory.split('pkl_shortest_path')[0]
+    #plt.suptitle("Microbe-Neurotransmitter-Disease Path Patterns Found in Each KG") #Microbe-Neurotransmitter-Disease for two paths as input to command line, Microbe-Disease for one paths
+    plt.suptitle("Microbe-Disease Path Patterns Found in Each KG")  #Uniprot KG") #Microbe-Neurotransmitter-Disease for two paths as input to command line, Microbe-Disease for one paths
+    plt.legend(["MGMLink","UniProt KG"]) #"kg-microbe-phenio"])
+    #save_dir = pkl_directory.split('pkl_shortest_path')[0] 
+    save_dir = kg_directory.split('uniprot_shortest_path')[0]
 
     plt.show()
 

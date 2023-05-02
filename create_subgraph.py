@@ -6,10 +6,11 @@ import pandas as pd
 from tqdm import tqdm
 from evaluation import output_path_lists
 from evaluation import output_num_paths_pairs
+from tqdm import tqdm
 
 def subgraph_shortest_path(input_nodes_df,graph,g_nodes,labels_all,triples_df,weights,search_type,kg_type):
 
-    input_nodes_df.columns= input_nodes_df.columns.str.lower()
+    input_nodes_df.columns = input_nodes_df.columns.str.lower()
 
     all_paths = []
 
@@ -17,12 +18,17 @@ def subgraph_shortest_path(input_nodes_df,graph,g_nodes,labels_all,triples_df,we
         start_node = input_nodes_df.iloc[i].loc['source_label']
         end_node = input_nodes_df.iloc[i].loc['target_label']
         shortest_path_df = find_shortest_path(start_node,end_node,graph,g_nodes,labels_all,triples_df,weights,search_type,kg_type,input_nodes_df)
-        all_paths.append(shortest_path_df)
+        if len(shortest_path_df) > 0:
+            all_paths.append(shortest_path_df)
 
-    df = pd.concat(all_paths)
-    df.reset_index(drop=True, inplace=True)
-    #Remove duplicate edges
-    df = df.drop_duplicates(subset=['S','P','O'])
+    if len(all_paths) > 0:
+        df = pd.concat(all_paths)
+        df.reset_index(drop=True, inplace=True)
+        #Remove duplicate edges
+        df = df.drop_duplicates(subset=['S','P','O'])
+
+    else:
+        df = pd.DataFrame()
 
     return df
 
@@ -67,63 +73,11 @@ def user_defined_edge_weights(graph, triples_df,kg_type ):
     return(graph)
 
 # Have user define weights to upweight
-def user_defined_edge_exclusion(graph,kg_type ):
-    '''
-    if kg_type == 'pkl':
-        #If manually adding edges to remove
-        continuing = True
-        try:
-            edges = graph.labels_all[graph.labels_all['entity_type'] == 'RELATIONS'].label.tolist()
-        except KeyError:
-            print('Issue with edge weight generation - pkl')
-            continuing = False
-            pass
-        if continuing:
-            print("### Unique Edges in Knowledge Graph ###")
-            print('\n'.join(edges))
-            still_adding = True
-            to_drop= []
-            print('\n')
-            print('Input the edges to avoid in the path search (if possible). When finished input "Done."')
-            while(still_adding):
-                user_input = input('Edge or "Done": ')
-                if user_input == 'Done':
-                    still_adding = False
-                else:
-                    to_drop.append(user_input)
-            to_drop = graph.labels_all[graph.labels_all['label'].isin(to_drop)]['entity_uri'].tolist()
- 
-    if kg_type == 'kg-covid19' or kg_type == 'pkl' or kg_type == 'mikg4md':
-        
-        #If manually adding edges to drop
-        continuing = True
-        try:
-            edges = set(list(graph.igraph.es['predicate']))
-        except KeyError:
-            print('Issue with edge weight generation - kg-covid19')
-            continuing = False
-            pass
-        if continuing:
-            print(edges)
-            print(len(edges))
-            print("### Unique Edges in Knowledge Graph ###")
-            print('\n'.join(edges))
-            still_adding = True
-            to_drop= []
-            print('\n')
-            print('Input the edges to avoid in the path search (if possible). When finished input "Done"')
-            while(still_adding):
-                user_input = input('Edge or "Done"')
-                if user_input == 'Done':
-                    still_adding = False
-                else:
-                    to_drop.append(user_input)
-        '''
-
+def automatic_defined_edge_exclusion(graph,kg_type ):
     #If not manually adding edges to remove:
     if kg_type == 'pkl':
-        to_drop = ['<http://purl.obolibrary.org/obo/RO_0002160>','<http://purl.obolibrary.org/obo/BFO_0000050>','<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>']
-    if kg_type == 'kg-covid19':
+        to_drop = ['<http://purl.obolibrary.org/obo/RO_0002160>','<http://purl.obolibrary.org/obo/BFO_0000050>','<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>','<http://purl.obolibrary.org/obo/RO_0001025>']
+    if kg_type != 'pkl':
         to_drop = ['biolink:category','biolink:in_taxon']
     for edge in to_drop:
         graph.igraph.delete_edges(graph.igraph.es.select(predicate = edge))
